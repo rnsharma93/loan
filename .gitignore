@@ -4,3 +4,4 @@ app/storage/
 .phpintel/
 public/uploads/media/
 public/uploads/profile/
+.env
