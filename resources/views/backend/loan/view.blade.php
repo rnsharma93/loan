@@ -20,6 +20,11 @@
                   _lang("Guarantor")
                   }}</a>
                </li>
+               <li class="nav-item">
+                  <a class="nav-link" data-toggle="tab" href="#documents">{{
+                  _lang("Documents")
+                  }}</a>
+               </li>
                <!--
                <li class="nav-item">
                   <a class="nav-link" data-toggle="tab" href="#collateral">{{
@@ -42,6 +47,7 @@
                      href="{{ action('LoanController@edit', $loan['id']) }}"
                      >{{ _lang("Edit") }}</a>
                </li>
+               
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
@@ -165,27 +171,30 @@
                         <span>{{ _lang("Guarantors") }}</span>
                         <a
                            class="btn btn-primary btn-xs ml-auto ajax-modal"
-                           href="{{ route('guarantors.create') }}" data-title="{{ _lang('Add Guarantor') }}"
+                           href="{{ route('guarantors.create')."?loan_id=".$loan->id }}" data-title="{{ _lang('Add Guarantor') }}"
                            ><i class="ti-plus"></i>
-                        {{ _lang("Add New") }}</a
-                           >
+                        {{ _lang("Add New") }}</a>
                      </div>
                      <div class="card-body">
                         <div class="table-responsive">
                            <table id="guarantors_table" class="table table-bordered mt-2">
                               <thead>
                                  <tr>
-                                    <th>{{ _lang('Loan ID') }}</th>
-                                    <th>{{ _lang('Guarantor') }}</th>
+                                    <th>S.No.</th>
+                                    <th>{{ _lang('Name') }}</th>
+                                    <th>{{ _lang('Father Name') }}</th>
+                                    <th>Mobile</th>
                                     <th>{{ _lang('Amount') }}</th>
                                     <th class="text-center">{{ _lang('Action') }}</th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 @foreach($guarantors as $guarantor)
+                                 @foreach($guarantors as $key => $guarantor)
                                  <tr data-id="row_{{ $guarantor->id }}">
-                                    <td class='loan_id'>{{ $guarantor->loan->loan_id }}</td>
-                                    <td class='member_id'>{{ $guarantor->member->name }}</td>
+                                    <td>{{ ($key+1) }}</td>
+                                    <td class='loan_id'>{{ $guarantor->name }}</td>
+                                    <td class='member_id'>{{ $guarantor->father_name }}</td>
+                                    <td> {{ $guarantor->mobile }} </td>
                                     <td class='amount'>{{ decimalPlace($guarantor->amount, currency($loan->currency->name)) }}</td>
                                     
                                     <td class="text-center">
@@ -207,7 +216,7 @@
                                  </tr>
                                  @endforeach
                                  <tr>
-                                    <td colspan="2">{{ _lang('Grand Total') }}</td>
+                                    <td colspan="4">{{ _lang('Grand Total') }}</td>
                                     <td colspan="2"><b>{{ decimalPlace($guarantors->sum('amount'), currency($loan->currency->name)) }}</b></td>
                                  </tr>
                               </tbody>
@@ -330,6 +339,7 @@
                      </div>
                   </div>
                </div>
+
                <div class="tab-pane fade mt-4 border px-3" id="schedule">
                   <div class="report-header">
                      <h4>{{ get_option('company_name') }}</h4>
@@ -339,6 +349,7 @@
                   <table class="table table-bordered report-table">
                      <thead>
                         <tr>
+                           <th>S.No.</th>
                            <th>{{ _lang("Date") }}</th>
                            <th class="text-right">{{ _lang("Amount to Pay") }}</th>
                            <th class="text-right">{{ _lang("Late Penalty") }}</th>
@@ -349,8 +360,9 @@
                         </tr>
                      </thead>
                      <tbody>
-                        @foreach($repayments as $repayment)
+                        @foreach($repayments as $key => $repayment)
                         <tr>
+                           <td>{{ ($key + 1) }}</td>
                            <td>{{ $repayment->repayment_date }}</td>
                            <td class="text-right">
                               {{ decimalPlace($repayment['amount_to_pay'], currency($loan->currency->name)) }}
@@ -381,6 +393,7 @@
                      </tbody>
                   </table>
                </div>
+
                <div class="tab-pane fade mt-4" id="repayments">
                   <div class="report-header">
                      <h4>{{ get_option('company_name') }}</h4>
@@ -390,6 +403,7 @@
                   <table class="table table-bordered report-table" id="repayments-table">
                      <thead>
                         <tr>
+                           <th>S.No.</th>
                            <th>{{ _lang("Date") }}</th>
                            <th class="text-right">{{ _lang("Principal Amount") }}</th>
                            <th class="text-right">{{ _lang("Interest") }}</th>
@@ -398,8 +412,9 @@
                         </tr>
                      </thead>
                      <tbody>
-                        @foreach($payments as $payment)
+                        @foreach($payments as $key => $payment)
                         <tr>
+                           <td> {{ ($key+1) }} </td>
                            <td>{{ $payment->paid_at }}</td>
                            <td class="text-right">
                               {{ decimalPlace($payment['repayment_amount'] - $payment['interest'], currency($loan->currency->name)) }}
@@ -418,6 +433,61 @@
                      </tbody>
                   </table>
                </div>
+
+               <div class="tab-pane fade" id="documents">
+                  <div class="card">
+                     <div class="card-header d-flex align-items-center">
+                        <span>{{ _lang("Documents") }}</span>
+                        <a
+                           class="btn btn-primary btn-xs ml-auto ajax-modal"
+                           href="{{ route('loan_documents.create', $loan->id)}}" data-title="{{ _lang('Add New') }}"
+                           ><i class="ti-plus"></i>
+                        {{ _lang("Add New") }}</a>
+                     </div>
+                     <div class="card-body">
+                        <div class="table-responsive">
+                           <table id="loan_documents_table" class="table table-bordered mt-2">
+                              <thead>
+                                 <tr>
+                                    <th>S.No.</th>
+                                    <th>{{ _lang('Name') }}</th>
+                                    <th>{{ _lang('Document') }}</th>
+                                    <th class="text-center">{{ _lang('Action') }}</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 @foreach($documents as $key => $document)
+                                 <tr data-id="row_{{ $document->id }}">
+                                    <td>{{ ($key+1) }}</td>
+                                    <td class=''>{{ $document->name }}</td>
+                                    <td class=''>
+                                       <a target="_blank" href="{{ asset('public/uploads/documents/'.$document->document) }}">{{ $document->document }}</a>
+                                    </td>
+                                    <td class="text-center">
+                                       <span class="dropdown">
+                                          <button class="btn btn-primary dropdown-toggle btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          {{ _lang('Action') }}
+                                          </button>
+                                          <form action="{{ action('LoanDocumentController@destroy', $document['id']) }}" method="post">
+                                           {{ csrf_field() }}
+                                           <input name="_method" type="hidden" value="DELETE">
+                
+                                           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                              <a href="{{ action('LoanDocumentController@edit', $document['id']) }}" data-title="{{ _lang('Update Document') }}" class="dropdown-item dropdown-edit ajax-modal"><i class="ti-pencil-alt"></i>&nbsp;{{ _lang('Edit') }}</a>
+                                              <button class="btn-remove dropdown-item" type="submit"><i class="ti-trash"></i>&nbsp;{{ _lang('Delete') }}</button>
+                                           </div>
+                                          </form>
+                                        </span>
+                                    </td>
+                                 </tr>
+                                 @endforeach
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
             </div>
          </div>
       </div>

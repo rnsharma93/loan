@@ -4,38 +4,25 @@
 	<div class="row px-2">
 		<div class="col-md-12">
 			<div class="form-group">
-				<label class="control-label">{{ _lang('Loan ID') }}</label>						
-				<select class="form-control auto-select select2" data-selected="{{ $guarantor->loan_id }}" name="loan_id" required>
-					<option value="">{{ _lang('Select One') }}</option>
-					@foreach(\App\Models\Loan::where('status',0)->get() as $loan)
-					<option value="{{ $loan->id }}">{{ $loan->loan_id }} ({{ _lang('Applied Amount').': '.decimalPlace($loan->applied_amount, currency($loan->currency->name)) }})</option>
-					@endforeach
-				</select>
+				<label class="control-label">{{ _lang('Name') }}</label>						
+				<input type="text" class="form-control" name="name" value="{{ $guarantor->name }}" required>
 			</div>
 		</div>
 
 		<div class="col-md-12">
 			<div class="form-group">
-				<label class="control-label">{{ _lang('Guarantor') }}</label>						
-				<select class="form-control auto-select select2" data-selected="{{ $guarantor->member_id }}" name="member_id" id="member_id" required>
-					<option value="">{{ _lang('Select One') }}</option>
-					@foreach(\App\Models\Member::all() as $member)
-					<option value="{{ $member->id }}">{{ $member->first_name.' '.$member->last_name }} ({{ $member->member_no }})</option>
-					@endforeach
-				</select>
+				<label class="control-label">{{ _lang('Father Name') }}</label>						
+				<input type="text" class="form-control" name="father_name" value="{{ $guarantor->father_name }}" required>
 			</div>
 		</div>
 
 		<div class="col-md-12">
 			<div class="form-group">
-				<label class="control-label">{{ _lang('Account Number') }}</label>							
-				<select class="form-control select2 auto-select" data-selected="{{ $guarantor->savings_account_id }}" name="savings_account_id" id="savings_account_id" required>
-				@foreach(\App\Models\SavingsAccount::where('member_id', $guarantor->member_id)->get() as $account)
-					<option value="{{ $account->id }}">{{ $account->account_number }} ({{ $account->savings_type->name.' - '.$account->savings_type->currency->name }})</option>
-				@endforeach
-				</select>	
+				<label class="control-label">{{ _lang('Mobile No.') }}</label>						
+				<input type="text" class="form-control float-field" name="mobile" value="{{ $guarantor->mobile }}" required>
 			</div>
 		</div>
+
 
 		<div class="col-md-12">
 			<div class="form-group">

@@ -118,7 +118,7 @@ class LoanPaymentController extends Controller {
         $repayment->save();
 
         $loan->total_paid = $loan->total_paid + $repayment->amount_to_pay;
-        if ($loan->total_paid >= $loan->applied_amount) {
+        if ($loan->total_paid >= $loan->total_payable) {
             $loan->status = 2;
         }
         $loan->save();

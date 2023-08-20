@@ -28,7 +28,8 @@ class GuarantorController extends Controller {
         if (!$request->ajax()) {
             return back();
         } else {
-            return view('backend.guarantor.modal.create');
+            $loan_id = $request->get('loan_id');
+            return view('backend.guarantor.modal.create', compact('loan_id'));
         }
     }
 
@@ -42,12 +43,10 @@ class GuarantorController extends Controller {
         $loan = Loan::find($request->loan_id);
 
         $validator = Validator::make($request->all(), [
-            'loan_id'            => 'required',
-            'savings_account_id' => 'required',
-            'member_id'          => 'required|not_in:' . $loan->borrower_id,
+            'name'            => 'required',
+            'father_name' => 'required',
+            'mobile'          => 'required|numeric',
             'amount'             => 'required|numeric',
-        ], [
-            'member_id.not_in' => $loan->borrower->name . ' ' . _lang('is the borrower of Loan') . ' (' . $loan->loan_id . ')',
         ]);
 
         if ($validator->fails()) {
@@ -60,38 +59,14 @@ class GuarantorController extends Controller {
             }
         }
 
-        $account = SavingsAccount::find($request->savings_account_id);
-
-        if ($account->savings_type->currency_id != $loan->currency_id) {
-            if ($request->ajax()) {
-                return response()->json(['result' => 'error', 'message' => _lang('Loan currency and account currency is mismatch')]);
-            } else {
-                return back()
-                    ->with('error', _lang('Loan currency and account currency is mismatch'))
-                    ->withInput();
-            }
-        }
-
-        if ($request->amount > get_account_balance($account->id, $request->member_id)) {
-            if ($request->ajax()) {
-                return response()->json(['result' => 'error', 'message' => _lang('Insufficient account balance')]);
-            } else {
-                return back()
-                    ->with('error', _lang('Insufficient account balance'))
-                    ->withInput();
-            }
-        }
-
         $guarantor                     = new Guarantor();
         $guarantor->loan_id            = $request->input('loan_id');
-        $guarantor->member_id          = $request->input('member_id');
-        $guarantor->savings_account_id = $request->input('savings_account_id');
+        $guarantor->name               = $request->input('name');
+        $guarantor->mobile             = $request->input('mobile');
+        $guarantor->father_name        = $request->input('father_name');
         $guarantor->amount             = $request->input('amount');
 
         $guarantor->save();
-
-        //Prefix Output
-        $guarantor->loan_id = $guarantor->loan->loan_id;
 
         if (!$request->ajax()) {
             return redirect()->route('guarantors.create')->with('success', _lang('Saved Successfully'));
@@ -127,9 +102,9 @@ class GuarantorController extends Controller {
         $loan = Loan::find($request->loan_id);
 
         $validator = Validator::make($request->all(), [
-            'loan_id'            => 'required',
-            'member_id'          => 'required|not_in:' . $loan->borrower_id,
-            'savings_account_id' => 'required',
+            'name'            => 'required',
+            'father_name'          => 'required',
+            'mobile' => 'required|numeric',
             'amount'             => 'required|numeric',
         ]);
 
@@ -143,40 +118,13 @@ class GuarantorController extends Controller {
             }
         }
 
-        $account = SavingsAccount::find($request->savings_account_id);
-
-        if ($account->savings_type->currency_id != $loan->currency_id) {
-            if ($request->ajax()) {
-                return response()->json(['result' => 'error', 'message' => _lang('Loan currency and account currency is mismatch')]);
-            } else {
-                return back()
-                    ->with('error', _lang('Loan currency and account currency is mismatch'))
-                    ->withInput();
-            }
-        }
-
         $guarantor      = Guarantor::find($id);
-        $previousAmount = $request->member_id == $guarantor->member_id ? $guarantor->amount : 0;
-
-        if ($request->amount > get_account_balance($account->id, $request->member_id) + $previousAmount) {
-            if ($request->ajax()) {
-                return response()->json(['result' => 'error', 'message' => _lang('Insufficient account balance')]);
-            } else {
-                return back()
-                    ->with('error', _lang('Insufficient account balance'))
-                    ->withInput();
-            }
-        }
-
-        $guarantor->loan_id            = $request->input('loan_id');
-        $guarantor->member_id          = $request->input('member_id');
-        $guarantor->savings_account_id = $request->input('savings_account_id');
+        $guarantor->name               = $request->input('name');
+        $guarantor->mobile             = $request->input('mobile');
+        $guarantor->father_name        = $request->input('father_name');
         $guarantor->amount             = $request->input('amount');
 
         $guarantor->save();
-
-        //Prefix Output
-        $guarantor->loan_id = $guarantor->loan->loan_id;
 
         if (!$request->ajax()) {
             return redirect()->route('guarantors.index')->with('success', _lang('Updated Successfully'));

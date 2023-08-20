@@ -178,7 +178,8 @@ class MemberController extends Controller {
         $member->credit_source = $request->input('credit_source');
         $member->photo         = $photo;
         //$member->custom_fields  = $request->input('custom_fields');
-
+        $member->aadhaar_no = $request->input('aadhaar_no');
+        $member->pan_card_no = $request->input('pan_card_no');
         $member->save();
 
         DB::commit();
@@ -371,7 +372,8 @@ class MemberController extends Controller {
             $member->photo = $photo;
         }
         //$member->custom_fields = $request->input('custom_fields');
-
+        $member->aadhaar_no = $request->input('aadhaar_no');
+        $member->pan_card_no = $request->input('pan_card_no');
         $member->save();
 
         DB::commit();

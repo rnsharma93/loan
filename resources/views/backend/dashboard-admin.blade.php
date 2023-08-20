@@ -19,9 +19,6 @@
 	</div>
 
 	
-
-	
-
 	<div class="col-xl-3 col-md-6">
 		<div class="card mb-4 danger-card dashboard-card">
 			<div class="card-body">
@@ -32,6 +29,38 @@
 					</div>
 					<div>
 						<a href="{{ route('loans.index') }}"><i class="ti-arrow-right"></i>&nbsp;{{ _lang('View') }}</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-xl-3 col-md-6">
+		<div class="card mb-4 success-card dashboard-card">
+			<div class="card-body">
+				<div class="d-flex">
+					<div class="flex-grow-1">
+						<h5>{{ _lang('Total Loan') }}</h5>
+						<h4 class="pt-1 mb-0"><b>{{ number_format(request_count('total_loan_amount')) }}</b></h4>
+					</div>
+					<div>
+						<a href="{{ route('loans.index') }}"><i class="ti-arrow-right"></i>&nbsp;{{ _lang('View') }}</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-xl-3 col-md-6">
+		<div class="card mb-4 warning-card dashboard-card">
+			<div class="card-body">
+				<div class="d-flex">
+					<div class="flex-grow-1">
+						<h5>{{ _lang('Total Loan') }}</h5>
+						<h4 class="pt-1 mb-0"><b>{{ number_format(request_count('total_account_balance')) }}</b></h4>
+					</div>
+					<div>
+						<a href="{{ route('savings_accounts.index') }}"><i class="ti-arrow-right"></i>&nbsp;{{ _lang('View') }}</a>
 					</div>
 				</div>
 			</div>

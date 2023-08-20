@@ -34,6 +34,8 @@
 							<tr><td>{{ _lang('Last Name') }}</td><td>{{ $member->last_name }}</td></tr>
 							<tr><td>{{ _lang('Business Name') }}</td><td>{{ $member->business_name }}</td></tr>
 							<tr><td>{{ _lang('Member No') }}</td><td>{{ $member->member_no }}</td></tr>
+                            <tr><td>{{ _lang('Aadhaar No') }}</td><td>{{ $member->aadhaar_no }}</td></tr>
+                            <tr><td>{{ _lang('PAN Card No') }}</td><td>{{ $member->pan_card_no }}</td></tr>
 							<tr><td>{{ _lang('Branch') }}</td><td>{{ $member->branch->name }}</td></tr>
 							<tr><td>{{ _lang('Email') }}</td><td>{{ $member->email }}</td></tr>
 							<tr><td>{{ _lang('Mobile') }}</td><td>{{ $member->country_code.$member->mobile }}</td></tr>

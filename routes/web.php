@@ -177,6 +177,10 @@ Route::group(['middleware' => ['install']], function () {
 			Route::get('loans/filter/{status?}', 'LoanController@index')->name('loans.filter')->where('status', '[A-Za-z]+');
 			Route::resource('loans', 'LoanController');
 
+			//Loan Document controller
+			Route::get('loan_documents/create/{loan_id}', 'LoanDocumentController@create')->name('loan_documents.create');
+			Route::resource('loan_documents', 'LoanDocumentController')->except(['index', 'create', 'show']);
+
 			//Loan Collateral Controller
 			Route::get('loan_collaterals/loan/{loan_id}', 'LoanCollateralController@index')->name('loan_collaterals.index');
 			Route::resource('loan_collaterals', 'LoanCollateralController')->except('index');

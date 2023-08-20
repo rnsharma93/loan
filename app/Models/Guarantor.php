@@ -12,10 +12,6 @@ class Guarantor extends Model {
      */
     protected $table = 'guarantors';
 
-    public function member() {
-        return $this->belongsTo('App\Models\Member', 'member_id')->withDefault();
-    }
-
     public function loan() {
         return $this->belongsTo('App\Models\Loan', 'loan_id')->withDefault();
     }

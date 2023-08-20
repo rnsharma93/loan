@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guarantor;
 use App\Models\Loan;
 use App\Models\LoanCollateral;
+use App\Models\LoanDocument;
 use App\Models\LoanPayment;
 use App\Models\LoanProduct;
 use App\Models\LoanRepayment;
@@ -232,7 +233,9 @@ class LoanController extends Controller {
 
 		$payments = LoanPayment::where('loan_id', $loan->id)->orderBy('id', 'desc')->get();
 
-		return view('backend.loan.view', compact('loan', 'loancollaterals', 'repayments', 'payments', 'guarantors'));
+		$documents = LoanDocument::where('loan_id', $loan->id)->get();
+
+		return view('backend.loan.view', compact('loan', 'loancollaterals', 'repayments', 'payments', 'guarantors', 'documents'));
 
 	}
 

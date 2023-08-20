@@ -40,6 +40,20 @@
 							</div>
 						</div>
 
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="control-label">{{ _lang('Aadhaar No.') }}</label>						
+								<input type="text" class="form-control" name="aadhaar_no" value="{{ old('aadhaar_no', $member->aadhaar_no) }}" >
+							</div>
+						</div>
+
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="control-label">{{ _lang('PAN Card No.') }}</label>						
+								<input type="text" class="form-control" name="pan_card_no" value="{{ old('pan_card_no', $member->pan_card_no) }}">
+							</div>
+						</div>
+
 						@if(auth()->user()->user_type == 'admin')
 						<div class="col-md-6">
 							<div class="form-group">

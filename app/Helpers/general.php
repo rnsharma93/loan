@@ -785,6 +785,13 @@ if (!function_exists('request_count')) {
             $notification_count = \App\Models\WithdrawRequest::where('status', 0)->count();
         } else if ($request == 'member_requests') {
             $notification_count = \App\Models\Member::withoutGlobalScopes(['status'])->where('status', 0)->count();
+        } else if($request == 'total_loan_amount') {
+            $notification_count = \App\Models\Loan::where('status', 1)->sum('applied_amount');
+        } else if ($request == 'total_account_balance') {
+            $result = DB::select("SELECT ((SELECT IFNULL(SUM(amount),0) FROM transactions WHERE dr_cr = 'cr'
+	        AND status = 2) - (SELECT IFNULL(SUM(amount),0) FROM transactions
+	            WHERE dr_cr = 'dr' AND status = 2)) as balance");
+            $notification_count = $result[0]->balance;
         }
 
         if ($html == false) {
@@ -971,9 +978,7 @@ if (!function_exists('get_account_details')) {
         $accounts = SavingsAccount::select('savings_accounts.*', DB::raw("((SELECT IFNULL(SUM(amount),0)
         FROM transactions WHERE dr_cr = 'cr' AND status = 2 AND savings_account_id = savings_accounts.id) -
         (SELECT IFNULL(SUM(amount),0) FROM transactions WHERE dr_cr = 'dr'
-        AND status != 1 AND savings_account_id = savings_accounts.id)) as balance"), DB::raw("(SELECT IFNULL(SUM(guarantors.amount),0)
-        FROM guarantors JOIN loans ON loans.id=guarantors.loan_id WHERE (loans.status = 0 OR loans.status = 1)
-        AND guarantors.savings_account_id=savings_accounts.id) as blocked_amount"))
+        AND status != 1 AND savings_account_id = savings_accounts.id)) as balance"), DB::raw("0 as blocked_amount"))
             ->with(['savings_type', 'savings_type.currency'])
             ->where('savings_accounts.member_id', $member_id)
             ->orderBy('id', 'desc')
@@ -985,17 +990,13 @@ if (!function_exists('get_account_details')) {
 
 if (!function_exists('get_account_balance')) {
     function get_account_balance($account_id, $member_id) {
-        $blockedAmount = App\Models\Guarantor::join('loans', 'loans.id', 'guarantors.loan_id')
-            ->whereRaw('loans.status = 0 OR loans.status = 1')
-            ->where('guarantors.member_id', $member_id)
-            ->where('guarantors.savings_account_id', $account_id)
-            ->sum('guarantors.amount');
+        
 
         $result = DB::select("SELECT ((SELECT IFNULL(SUM(amount),0) FROM transactions WHERE dr_cr = 'cr'
 	    AND member_id = $member_id AND savings_account_id = $account_id AND status = 2) - (SELECT IFNULL(SUM(amount),0) FROM transactions
 	    WHERE dr_cr = 'dr' AND member_id = $member_id AND savings_account_id = $account_id AND status != 1)) as balance");
 
-        return $result[0]->balance - $blockedAmount;
+        return $result[0]->balance ;
     }
 }
 
@@ -1003,13 +1004,14 @@ if (!function_exists('get_blocked_balance')) {
 
     function get_blocked_balance($account_id, $member_id) {
 
-        $blockedAmount = App\Models\Guarantor::join('loans', 'loans.id', 'guarantors.loan_id')
-            ->whereRaw('loans.status = 0 OR loans.status = 1')
-            ->where('guarantors.member_id', $member_id)
-            ->where('guarantors.savings_account_id', $account_id)
-            ->sum('guarantors.amount');
+        // $blockedAmount = App\Models\Guarantor::join('loans', 'loans.id', 'guarantors.loan_id')
+        //     ->whereRaw('loans.status = 0 OR loans.status = 1')
+        //     ->where('guarantors.member_id', $member_id)
+        //     ->where('guarantors.savings_account_id', $account_id)
+        //     ->sum('guarantors.amount');
+            
 
-        return $blockedAmount;
+        return 0;
     }
 
 }
