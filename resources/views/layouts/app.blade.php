@@ -41,6 +41,7 @@
 		@endif
 		
 		@include('layouts.others.languages')	
+		
     </head>
 
     <body>  

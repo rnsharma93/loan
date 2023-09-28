@@ -59,7 +59,7 @@
                      </span>
                   </div>
                   @endif
-                  <table class="table table-bordered mt-4">
+                  <table id="table_loan_details" class="table table-bordered mt-4">
                      <tr>
                         <td>{{ _lang("Loan ID") }}</td>
                         <td>{{ $loan->loan_id }}</td>
@@ -512,4 +512,28 @@
 
    })(jQuery);
 </script>
+
+<script>
+	// Function to print the table
+	function printTable() {
+		var table = document.getElementById("table_loan_details");
+		var newWin = window.open("", "Print-Window");
+		newWin.document.open();
+		newWin.document.write('<html><head><link rel="stylesheet" type="text/css" href="print.css"></head><body>');
+		newWin.document.write(table.outerHTML);
+		newWin.document.write('</body></html>');
+		newWin.document.close();
+		newWin.print();
+		newWin.close();
+	}
+
+	// Listen for the "Ctrl + P" or "Command + P" key combination
+	document.addEventListener("keydown", function(event) {
+		if ((event.ctrlKey || event.metaKey) && event.key === "p") {
+			event.preventDefault(); // Prevent the browser's default print dialog
+			printTable();
+		}
+	});
+</script>
+
 @endsection

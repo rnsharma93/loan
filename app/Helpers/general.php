@@ -786,7 +786,9 @@ if (!function_exists('request_count')) {
         } else if ($request == 'member_requests') {
             $notification_count = \App\Models\Member::withoutGlobalScopes(['status'])->where('status', 0)->count();
         } else if($request == 'total_loan_amount') {
-            $notification_count = \App\Models\Loan::where('status', 1)->sum('applied_amount');
+            $total_sum = \App\Models\Loan::selectRaw('SUM(applied_amount - total_paid) as total_sum')->first();
+            $notification_count = $total_sum->total_sum ?? 0;
+
         } else if ($request == 'total_account_balance') {
             $result = DB::select("SELECT ((SELECT IFNULL(SUM(amount),0) FROM transactions WHERE dr_cr = 'cr'
 	        AND status = 2) - (SELECT IFNULL(SUM(amount),0) FROM transactions

@@ -137,10 +137,13 @@ class LoanPaymentController extends Controller {
      */
     public function show(Request $request, $id) {
         $loanpayment = LoanPayment::find($id);
+        //get serial number
+        $s_no = LoanPayment::where('id', '<', $id)->where('loan_id',$loanpayment->loan_id)->count() + 1;
+
         if (!$request->ajax()) {
-            return view('backend.loan_payment.view', compact('loanpayment', 'id'));
+            return view('backend.loan_payment.view', compact('loanpayment', 'id', 's_no'));
         } else {
-            return view('backend.loan_payment.modal.view', compact('loanpayment', 'id'));
+            return view('backend.loan_payment.modal.view', compact('loanpayment', 'id', 's_no'));
         }
 
     }

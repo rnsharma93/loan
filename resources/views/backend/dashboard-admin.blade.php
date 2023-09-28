@@ -56,7 +56,7 @@
 			<div class="card-body">
 				<div class="d-flex">
 					<div class="flex-grow-1">
-						<h5>{{ _lang('Total Loan') }}</h5>
+						<h5>{{ _lang('Market Amount') }}</h5>
 						<h4 class="pt-1 mb-0"><b>{{ number_format(request_count('total_account_balance')) }}</b></h4>
 					</div>
 					<div>
