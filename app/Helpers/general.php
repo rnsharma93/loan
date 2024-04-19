@@ -786,7 +786,7 @@ if (!function_exists('request_count')) {
         } else if ($request == 'member_requests') {
             $notification_count = \App\Models\Member::withoutGlobalScopes(['status'])->where('status', 0)->count();
         } else if($request == 'total_loan_amount') {
-            $total_sum = \App\Models\Loan::selectRaw('SUM(total_payable - total_paid) as total_sum')->first();
+            $total_sum = \App\Models\Loan::selectRaw('SUM(total_payable) - sum(total_paid) as total_sum')->where('status',1)->first();
             $notification_count = $total_sum->total_sum ?? 0;
 
         } else if ($request == 'total_account_balance') {

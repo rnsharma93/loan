@@ -44,7 +44,7 @@ CREATE TABLE `currency` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO currency VALUES('1','INR','1.000000','1','1','','2023-05-30 17:54:23');
 
@@ -59,8 +59,9 @@ CREATE TABLE `database_backups` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO database_backups VALUES('1','DB-BACKUP-1687073714.sql','1','2023-06-18 13:05:14','2023-06-18 13:05:14');
 
 
 
@@ -235,23 +236,44 @@ CREATE TABLE `failed_jobs` (
 
 
 
+DROP TABLE IF EXISTS guarantor_documents;
+
+CREATE TABLE `guarantor_documents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `guarantor_id` bigint(20) unsigned NOT NULL,
+  `loan_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `guarantor_documents_guarantor_id_foreign` (`guarantor_id`),
+  KEY `guarantor_documents_loan_id_foreign` (`loan_id`),
+  CONSTRAINT `guarantor_documents_guarantor_id_foreign` FOREIGN KEY (`guarantor_id`) REFERENCES `guarantors` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `guarantor_documents_loan_id_foreign` FOREIGN KEY (`loan_id`) REFERENCES `loans` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
 DROP TABLE IF EXISTS guarantors;
 
 CREATE TABLE `guarantors` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `loan_id` bigint(20) unsigned NOT NULL,
-  `member_id` bigint(20) unsigned NOT NULL,
-  `savings_account_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `father_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mobile` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `guarantors_loan_id_foreign` (`loan_id`),
-  KEY `guarantors_member_id_foreign` (`member_id`),
-  CONSTRAINT `guarantors_loan_id_foreign` FOREIGN KEY (`loan_id`) REFERENCES `loans` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `guarantors_member_id_foreign` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `guarantors_loan_id_foreign` FOREIGN KEY (`loan_id`) REFERENCES `loans` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO guarantors VALUES('2','6','Test','test','9413555613','5000.00','2023-08-19 17:59:12','2023-08-19 18:08:43');
+INSERT INTO guarantors VALUES('3','7','Test','Test2','343433','10000.00','2023-08-20 12:20:24','2023-08-20 12:20:24');
 
 
 
@@ -291,6 +313,21 @@ CREATE TABLE `loan_collaterals` (
 
 
 
+DROP TABLE IF EXISTS loan_documents;
+
+CREATE TABLE `loan_documents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `loan_id` bigint(20) NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
 DROP TABLE IF EXISTS loan_payments;
 
 CREATE TABLE `loan_payments` (
@@ -312,10 +349,11 @@ CREATE TABLE `loan_payments` (
   KEY `loan_payments_member_id_foreign` (`member_id`),
   CONSTRAINT `loan_payments_loan_id_foreign` FOREIGN KEY (`loan_id`) REFERENCES `loans` (`id`) ON DELETE CASCADE,
   CONSTRAINT `loan_payments_member_id_foreign` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO loan_payments VALUES('1','1','2023-05-30','0.00','2000.00','10333.33','10333.33','','1','','1','2023-05-30 22:47:51','2023-05-30 22:47:51');
-INSERT INTO loan_payments VALUES('2','2','2023-05-30','500.00','2000.00','6166.67','6666.67','','1','','13','2023-05-30 22:55:57','2023-05-30 22:55:57');
+INSERT INTO loan_payments VALUES('3','6','2023-08-19','0.00','2000.00','6166.67','6166.67','','1','','109','2023-08-19 18:37:58','2023-08-19 18:37:58');
+INSERT INTO loan_payments VALUES('4','6','2023-09-28','0.00','2000.00','6166.67','6166.67','','1','','110','2023-09-28 16:10:19','2023-09-28 16:10:19');
+INSERT INTO loan_payments VALUES('5','7','2023-09-30','0.00','2000.00','6166.67','6166.67','','2','','133','2023-09-28 16:10:31','2023-09-28 16:10:31');
 
 
 
@@ -357,44 +395,56 @@ CREATE TABLE `loan_repayments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=157 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO loan_repayments VALUES('1','1','2023-05-30','10333.33','0.00','8333.33','2000.00','113666.67','1','2023-05-30 22:42:00','2023-05-30 22:47:51');
-INSERT INTO loan_repayments VALUES('2','1','2023-06-30','10333.33','0.00','8333.33','2000.00','103333.33','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('3','1','2023-07-30','10333.33','0.00','8333.33','2000.00','93000.00','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('4','1','2023-08-30','10333.33','0.00','8333.33','2000.00','82666.67','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('5','1','2023-09-30','10333.33','0.00','8333.33','2000.00','72333.33','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('6','1','2023-10-30','10333.33','0.00','8333.33','2000.00','62000.00','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('7','1','2023-11-30','10333.33','0.00','8333.33','2000.00','51666.67','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('8','1','2023-12-30','10333.33','0.00','8333.33','2000.00','41333.33','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('9','1','2024-01-30','10333.33','0.00','8333.33','2000.00','31000.00','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('10','1','2024-03-01','10333.33','0.00','8333.33','2000.00','20666.67','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('11','1','2024-04-01','10333.33','0.00','8333.33','2000.00','10333.33','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('12','1','2024-05-01','10333.33','0.00','8333.33','2000.00','0.00','0','2023-05-30 22:42:00','2023-05-30 22:42:00');
-INSERT INTO loan_repayments VALUES('13','2','2023-05-30','6166.67','0.00','4166.67','2000.00','141833.33','1','2023-05-30 22:53:24','2023-05-30 22:55:57');
-INSERT INTO loan_repayments VALUES('14','2','2023-06-30','6166.67','0.00','4166.67','2000.00','135666.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('15','2','2023-07-30','6166.67','0.00','4166.67','2000.00','129500.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('16','2','2023-08-30','6166.67','0.00','4166.67','2000.00','123333.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('17','2','2023-09-30','6166.67','0.00','4166.67','2000.00','117166.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('18','2','2023-10-30','6166.67','0.00','4166.67','2000.00','111000.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('19','2','2023-11-30','6166.67','0.00','4166.67','2000.00','104833.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('20','2','2023-12-30','6166.67','0.00','4166.67','2000.00','98666.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('21','2','2024-01-30','6166.67','0.00','4166.67','2000.00','92500.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('22','2','2024-03-01','6166.67','0.00','4166.67','2000.00','86333.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('23','2','2024-04-01','6166.67','0.00','4166.67','2000.00','80166.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('24','2','2024-05-01','6166.67','0.00','4166.67','2000.00','74000.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('25','2','2024-06-01','6166.67','0.00','4166.67','2000.00','67833.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('26','2','2024-07-01','6166.67','0.00','4166.67','2000.00','61666.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('27','2','2024-08-01','6166.67','0.00','4166.67','2000.00','55500.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('28','2','2024-09-01','6166.67','0.00','4166.67','2000.00','49333.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('29','2','2024-10-01','6166.67','0.00','4166.67','2000.00','43166.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('30','2','2024-11-01','6166.67','0.00','4166.67','2000.00','37000.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('31','2','2024-12-01','6166.67','0.00','4166.67','2000.00','30833.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('32','2','2025-01-01','6166.67','0.00','4166.67','2000.00','24666.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('33','2','2025-02-01','6166.67','0.00','4166.67','2000.00','18500.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('34','2','2025-03-01','6166.67','0.00','4166.67','2000.00','12333.33','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('35','2','2025-04-01','6166.67','0.00','4166.67','2000.00','6166.67','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
-INSERT INTO loan_repayments VALUES('36','2','2025-05-01','6166.67','0.00','4166.67','2000.00','0.00','0','2023-05-30 22:53:24','2023-05-30 22:53:24');
+INSERT INTO loan_repayments VALUES('109','6','2023-08-09','6166.67','0.00','4166.67','2000.00','141833.33','1','2023-08-09 11:54:59','2023-08-19 18:37:58');
+INSERT INTO loan_repayments VALUES('110','6','2023-09-09','6166.67','0.00','4166.67','2000.00','135666.67','1','2023-08-09 11:54:59','2023-09-28 16:10:19');
+INSERT INTO loan_repayments VALUES('111','6','2023-10-09','6166.67','0.00','4166.67','2000.00','129500.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('112','6','2023-11-09','6166.67','0.00','4166.67','2000.00','123333.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('113','6','2023-12-09','6166.67','0.00','4166.67','2000.00','117166.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('114','6','2024-01-09','6166.67','0.00','4166.67','2000.00','111000.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('115','6','2024-02-09','6166.67','0.00','4166.67','2000.00','104833.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('116','6','2024-03-09','6166.67','0.00','4166.67','2000.00','98666.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('117','6','2024-04-09','6166.67','0.00','4166.67','2000.00','92500.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('118','6','2024-05-09','6166.67','0.00','4166.67','2000.00','86333.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('119','6','2024-06-09','6166.67','0.00','4166.67','2000.00','80166.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('120','6','2024-07-09','6166.67','0.00','4166.67','2000.00','74000.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('121','6','2024-08-09','6166.67','0.00','4166.67','2000.00','67833.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('122','6','2024-09-09','6166.67','0.00','4166.67','2000.00','61666.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('123','6','2024-10-09','6166.67','0.00','4166.67','2000.00','55500.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('124','6','2024-11-09','6166.67','0.00','4166.67','2000.00','49333.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('125','6','2024-12-09','6166.67','0.00','4166.67','2000.00','43166.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('126','6','2025-01-09','6166.67','0.00','4166.67','2000.00','37000.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('127','6','2025-02-09','6166.67','0.00','4166.67','2000.00','30833.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('128','6','2025-03-09','6166.67','0.00','4166.67','2000.00','24666.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('129','6','2025-04-09','6166.67','0.00','4166.67','2000.00','18500.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('130','6','2025-05-09','6166.67','0.00','4166.67','2000.00','12333.33','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('131','6','2025-06-09','6166.67','0.00','4166.67','2000.00','6166.67','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('132','6','2025-07-09','6166.67','0.00','4166.67','2000.00','0.00','0','2023-08-09 11:54:59','2023-08-09 11:54:59');
+INSERT INTO loan_repayments VALUES('133','7','2023-08-19','6166.67','0.00','4166.67','2000.00','141833.33','1','2023-08-19 18:36:55','2023-09-28 16:10:31');
+INSERT INTO loan_repayments VALUES('134','7','2023-09-19','6166.67','0.00','4166.67','2000.00','135666.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('135','7','2023-10-19','6166.67','0.00','4166.67','2000.00','129500.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('136','7','2023-11-19','6166.67','0.00','4166.67','2000.00','123333.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('137','7','2023-12-19','6166.67','0.00','4166.67','2000.00','117166.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('138','7','2024-01-19','6166.67','0.00','4166.67','2000.00','111000.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('139','7','2024-02-19','6166.67','0.00','4166.67','2000.00','104833.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('140','7','2024-03-19','6166.67','0.00','4166.67','2000.00','98666.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('141','7','2024-04-19','6166.67','0.00','4166.67','2000.00','92500.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('142','7','2024-05-19','6166.67','0.00','4166.67','2000.00','86333.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('143','7','2024-06-19','6166.67','0.00','4166.67','2000.00','80166.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('144','7','2024-07-19','6166.67','0.00','4166.67','2000.00','74000.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('145','7','2024-08-19','6166.67','0.00','4166.67','2000.00','67833.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('146','7','2024-09-19','6166.67','0.00','4166.67','2000.00','61666.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('147','7','2024-10-19','6166.67','0.00','4166.67','2000.00','55500.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('148','7','2024-11-19','6166.67','0.00','4166.67','2000.00','49333.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('149','7','2024-12-19','6166.67','0.00','4166.67','2000.00','43166.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('150','7','2025-01-19','6166.67','0.00','4166.67','2000.00','37000.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('151','7','2025-02-19','6166.67','0.00','4166.67','2000.00','30833.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('152','7','2025-03-19','6166.67','0.00','4166.67','2000.00','24666.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('153','7','2025-04-19','6166.67','0.00','4166.67','2000.00','18500.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('154','7','2025-05-19','6166.67','0.00','4166.67','2000.00','12333.33','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('155','7','2025-06-19','6166.67','0.00','4166.67','2000.00','6166.67','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
+INSERT INTO loan_repayments VALUES('156','7','2025-07-19','6166.67','0.00','4166.67','2000.00','0.00','0','2023-08-19 18:36:55','2023-08-19 18:36:55');
 
 
 
@@ -425,10 +475,10 @@ CREATE TABLE `loans` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO loans VALUES('1','2023-001','1','1','2023-05-30','2023-05-30','1','100000.00','12','124000.00','10333.33','0.00','','','','1','2023-05-30','1','1','','','2023-05-30 17:56:54','2023-05-30 22:47:51');
-INSERT INTO loans VALUES('2','RNS-02','1','1','2023-05-30','2023-05-30','1','100000.00','24','148000.00','6166.67','0.00','','','','1','2023-05-30','1','1','','','2023-05-30 22:53:07','2023-05-30 22:55:57');
+INSERT INTO loans VALUES('6','Test','1','1','2023-08-09','2023-08-09','1','100000.00','24','148000.00','12333.34','0.00','','','','1','2023-08-09','1','1','','','2023-08-09 11:54:57','2023-09-28 16:10:19');
+INSERT INTO loans VALUES('7','123','1','2','2023-08-19','2023-08-19','1','100000.00','24','148000.00','6166.67','0.00','','','','1','2023-08-19','1','1','','','2023-08-19 18:36:52','2023-09-28 16:10:31');
 
 
 
@@ -444,8 +494,9 @@ CREATE TABLE `member_documents` (
   PRIMARY KEY (`id`),
   KEY `member_documents_member_id_foreign` (`member_id`),
   CONSTRAINT `member_documents_member_id_foreign` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO member_documents VALUES('1','1','Test','1687073833648eb4296906a-GMCA Logo.png','2023-06-18 13:07:13','2023-06-18 13:07:13');
 
 
 
@@ -473,10 +524,13 @@ CREATE TABLE `members` (
   `custom_fields` text COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `aadhaar_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pan_card_no` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO members VALUES('1','Ram','Test','','','1','','91','9413555613','Test','RNS-1','male','','','','','','default.png','','2023-05-30 17:56:12','2023-05-30 17:56:12');
+INSERT INTO members VALUES('1','Ram','Test','','','1','','91','9413555613','Test','RNS-1','male','','','','','','default.png','','2023-05-30 17:56:12','2023-08-19 15:32:06','1212121221212121','EFRPS1234T');
+INSERT INTO members VALUES('2','Ram','Test2','','','1','','91','','','RNS-02','','','','','','','default.png','','2023-08-19 15:38:45','2023-08-19 15:38:45','A234232','EFSf3434');
 
 
 
@@ -487,7 +541,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO migrations VALUES('1','2014_10_12_000000_create_users_table','1');
 INSERT INTO migrations VALUES('2','2014_10_12_100000_create_password_resets_table','1');
@@ -520,7 +574,6 @@ INSERT INTO migrations VALUES('28','2022_06_01_083021_create_loans_table','1');
 INSERT INTO migrations VALUES('29','2022_06_01_083022_create_loan_collaterals_table','1');
 INSERT INTO migrations VALUES('30','2022_06_01_083025_create_loan_payments_table','1');
 INSERT INTO migrations VALUES('31','2022_06_01_083069_create_loan_repayments_table','1');
-INSERT INTO migrations VALUES('32','2022_06_06_072245_create_guarantors_table','1');
 INSERT INTO migrations VALUES('33','2022_07_26_155338_create_deposit_requests_table','1');
 INSERT INTO migrations VALUES('34','2022_07_26_163427_create_withdraw_requests_table','1');
 INSERT INTO migrations VALUES('35','2022_08_09_160105_create_notifications_table','1');
@@ -532,6 +585,11 @@ INSERT INTO migrations VALUES('40','2022_09_18_074806_add_branch_id_to_expenses_
 INSERT INTO migrations VALUES('41','2022_10_16_081858_add_charge_to_deposit_requests_table','1');
 INSERT INTO migrations VALUES('42','2022_10_29_095023_add_status_to_members_table','1');
 INSERT INTO migrations VALUES('43','2023_01_29_093731_create_charge_limits_table','1');
+INSERT INTO migrations VALUES('44','2019_12_14_000001_create_personal_access_tokens_table','2');
+INSERT INTO migrations VALUES('45','2023_08_19_094327_add_column_to_members_table','2');
+INSERT INTO migrations VALUES('46','2022_06_06_072245_create_guarantors_table','3');
+INSERT INTO migrations VALUES('47','2023_08_19_103847_create_guarantor_documents_table','3');
+INSERT INTO migrations VALUES('48','2023_08_20_065226_create_loan_documents_table','4');
 
 
 
@@ -708,6 +766,26 @@ CREATE TABLE `permissions` (
 
 
 
+DROP TABLE IF EXISTS personal_access_tokens;
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tokenable_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text COLLATE utf8mb4_unicode_ci,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
 DROP TABLE IF EXISTS roles;
 
 CREATE TABLE `roles` (
@@ -741,10 +819,11 @@ CREATE TABLE `savings_accounts` (
   KEY `savings_accounts_savings_product_id_foreign` (`savings_product_id`),
   CONSTRAINT `savings_accounts_member_id_foreign` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE,
   CONSTRAINT `savings_accounts_savings_product_id_foreign` FOREIGN KEY (`savings_product_id`) REFERENCES `savings_products` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO savings_accounts VALUES('1','9413555613','1','1','1','0.00','','1','','2023-05-31 15:07:46','2023-05-31 15:07:46');
 INSERT INTO savings_accounts VALUES('2','9413555613-001','1','1','1','200000.00','','1','','2023-06-18 09:40:25','2023-06-18 09:40:25');
+INSERT INTO savings_accounts VALUES('3','9413555613-002','1','1','1','100000.00','','1','','2023-08-19 14:23:07','2023-08-19 14:23:07');
 
 
 
@@ -772,7 +851,7 @@ CREATE TABLE `savings_products` (
   CONSTRAINT `savings_products_currency_id_foreign` FOREIGN KEY (`currency_id`) REFERENCES `currency` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO savings_products VALUES('1','Investment - 1%','1','12.00','daily_outstanding_balance','1','','0.00','0','0.00','0.00','0.00','','1','2023-05-31 15:07:16','2023-05-31 15:07:16');
+INSERT INTO savings_products VALUES('1','Investment - 1%','1','12.00','daily_outstanding_balance','1','','0.00','1','0.00','0.00','0.00','','1','2023-05-31 15:07:16','2023-08-19 14:30:06');
 
 
 
@@ -882,11 +961,15 @@ CREATE TABLE `transactions` (
   CONSTRAINT `transactions_member_id_foreign` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE,
   CONSTRAINT `transactions_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `transactions_savings_account_id_foreign` FOREIGN KEY (`savings_account_id`) REFERENCES `savings_accounts` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO transactions VALUES('1','1','2023-05-31 15:07:46','1','','0.00','0.00','cr','Deposit','Manual','2','','Initial Deposit','','','','','1','','','','','2023-05-31 15:07:46','2023-05-31 15:07:46');
 INSERT INTO transactions VALUES('2','1','2023-04-01 15:08:00','1','','500000.00','0.00','cr','Deposit','Manual','2','','Deposit 5 lac','','','','','1','','','','','2023-05-31 15:09:27','2023-05-31 15:09:27');
 INSERT INTO transactions VALUES('3','1','2023-06-18 09:40:25','2','','200000.00','0.00','cr','Deposit','Manual','2','','Initial Deposit','','','','','1','','','','','2023-06-18 09:40:25','2023-06-18 09:40:25');
+INSERT INTO transactions VALUES('4','1','2023-08-19 14:23:07','3','','100000.00','0.00','cr','Deposit','Manual','2','','Initial Deposit','','','','','1','','','','','2023-08-19 14:23:07','2023-08-19 14:23:07');
+INSERT INTO transactions VALUES('5','1','2023-08-19 14:23:00','3','','100000.00','0.00','cr','Deposit','Manual','2','','deposit 1 lakh','','','','','1','','','','','2023-08-19 14:24:31','2023-08-19 14:24:31');
+INSERT INTO transactions VALUES('6','1','2023-08-19 14:29:00','3','','10000.00','0.00','dr','Withdraw','Manual','2','','withdraw 10 thousands','','','','','1','','','','','2023-08-19 14:30:10','2023-08-19 14:30:10');
+INSERT INTO transactions VALUES('8','1','2023-08-19 18:39:00','1','','100000.00','0.00','cr','Deposit','Manual','2','','s','','','','','1','','','','','2023-08-19 18:39:23','2023-08-19 18:39:23');
 
 
 
