@@ -90,9 +90,12 @@
                             @endif
 
                            @if($loan->status == 0)
-                           <a class="btn btn-outline-primary btn-xs" href="{{ action('LoanController@approve', $loan['id']) }}"><i class="ti-check-box"></i>&nbsp;{{ _lang("Click to Approve") }}</a
-                              >
-                           <a class="btn btn-outline-danger btn-xs float-right" href="{{ action('LoanController@reject', $loan['id']) }}"><i class="ti-close"></i>&nbsp;{{ _lang("Click to Reject") }}</a>
+                              <a class="btn btn-outline-primary btn-xs" href="{{ action('LoanController@approve', $loan['id']) }}"><i class="ti-check-box"></i>&nbsp;{{ _lang("Click to Approve") }}</a>
+                              <a class="btn btn-outline-danger btn-xs float-right" href="{{ action('LoanController@reject', $loan['id']) }}"><i class="ti-close"></i>&nbsp;{{ _lang("Click to Reject") }}</a>
+                           @endif
+
+                           @if ($loan->status == 1) 
+                              <a class="btn btn-outline-primary btn-xs" data-toggle="modal" data-target="#foreCloseModal" href="javascript:"><i class="ti-check-box"></i>&nbsp;{{ _lang("For Close") }}</a>
                            @endif
                         </td>
                      </tr>
@@ -493,6 +496,37 @@
       </div>
    </div>
 </div>
+
+<div class="modal fade" id="foreCloseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" id="exampleModalLabel">Loan Fore Close</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+           <span aria-hidden="true">&times;</span>
+         </button>
+       </div>
+       <div class="modal-body">
+            
+            <form id="formForeClose" name="formForeClose" action="{{route('loans.fore_close', $loan)}}" method="POST">
+               @csrf
+               <div class="row">
+                  <div class="col-md-12">
+                     <div class="form-group">
+                        <label class="control-label">{{ _lang('Fore Close Amount') }}</label>
+                        <input type="text" class="form-control" name="foreclose_amount" value="{{ old('foreclose_amount') }}" required>
+                     </div>
+                  </div>
+               </div>
+            </form>
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+         <button type="submit" form="formForeClose" class="btn btn-primary">Save changes</button>
+       </div>
+     </div>
+   </div>
+ </div>
 @endsection
 
 @section('js-script')

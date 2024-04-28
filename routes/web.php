@@ -174,6 +174,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::post('loans/calculator/calculate', 'LoanController@calculate')->name('loans.calculate');
 			Route::get('loans/approve/{id}', 'LoanController@approve')->name('loans.approve');
 			Route::get('loans/reject/{id}', 'LoanController@reject')->name('loans.reject');
+			Route::post('loans/fore-close/{id}', 'LoanController@foreClose')->name('loans.fore_close');
 			Route::get('loans/filter/{status?}', 'LoanController@index')->name('loans.filter')->where('status', '[A-Za-z]+');
 			Route::resource('loans', 'LoanController');
 

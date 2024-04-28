@@ -566,4 +566,36 @@ class LoanController extends Controller {
 
 	}
 
+	/**
+	 * Foreclose the loan.
+	 *
+	 * @param  int  $id
+	 * @return \Illuminate\Http\Response
+	 */
+	public function foreClose(Request $request, $id) {
+		$request->validate([
+			'foreclose_amount' => 'required|numeric'
+		]);
+		$loan = Loan::find($id);
+		
+		// Check if the loan is not active
+		if ($loan->status !== 1) {
+			return back()->with('error', _lang('Loan is not acitve'));
+		}
+		
+		// Update the loan status to closed
+		$loan->status = 2; //mark complete
+		$loan->total_paid = $loan->total_paid + $request->foreclose_amount;
+		$loan->foreclose_amount = $request->foreclose_amount;
+		$loan->foreclose_difference = $loan->total_payable - $loan->total_paid;
+		$loan->save();
+
+		//remaining repayments should be delete from database
+		$repayments = LoanRepayment::where('loan_id', $loan->id)->where('status', 0);
+		$repayments->delete();
+		
+		
+		return back()->with('success', _lang('Loan closed successfully'));
+	}
+
 }
