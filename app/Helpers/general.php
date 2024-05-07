@@ -1176,3 +1176,12 @@ if ( ! function_exists('ignoreRoutes')){
 		
 	}
 }
+
+if ( ! function_exists('moneyFormat')){
+    function moneyFormat($amount)
+    {
+        $fmt = new \NumberFormatter($locale = 'en_IN', \NumberFormatter::CURRENCY);
+        return $fmt->format($amount);
+    }
+}
+
