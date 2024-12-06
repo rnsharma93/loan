@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
+
 Route::group(['middleware' => ['install']], function () {
 
 	Route::get('/', function () {
@@ -47,7 +48,10 @@ Route::group(['middleware' => ['install']], function () {
 
 			//Payment Gateways
 			Route::resource('payment_gateways', 'PaymentGatewayController')->except([
-				'create', 'store', 'show', 'destroy',
+				'create',
+				'store',
+				'show',
+				'destroy',
 			]);
 
 			//Branch Controller
@@ -98,7 +102,9 @@ Route::group(['middleware' => ['install']], function () {
 
 			//Notification Template
 			Route::resource('notification_templates', 'NotificationTemplateController')->only([
-				'index', 'edit', 'update',
+				'index',
+				'edit',
+				'update',
 			]);
 
 		});
@@ -194,12 +200,18 @@ Route::group(['middleware' => ['install']], function () {
 			Route::get('loan_payments/get_table_data', 'LoanPaymentController@get_table_data');
 			Route::resource('loan_payments', 'LoanPaymentController');
 
+			Route::get('loan-payments', 'LoanPaymentController@index')->name('loan-payments.index');
+
+			// Show Loan Payment Receipt View
+			Route::get('loan-payments/{id}/view-receipt', 'LoanPaymentController@showReceipt')->name('loan-payments.view-receipt');
+
 			//Report Controller
 			Route::match(['get', 'post'], 'reports/account_statement', 'ReportController@account_statement')->name('reports.account_statement');
 			Route::match(['get', 'post'], 'reports/account_balances', 'ReportController@account_balances')->name('reports.account_balances');
 			Route::match(['get', 'post'], 'reports/transactions_report', 'ReportController@transactions_report')->name('reports.transactions_report');
 			Route::match(['get', 'post'], 'reports/loan_report', 'ReportController@loan_report')->name('reports.loan_report');
-			Route::get('reports/loan_due_report', 'ReportController@loan_due_report')->name('reports.loan_due_report');
+			Route::match(['get', 'post'], 'reports/loan_due_report', 'ReportController@loan_due_report')->name('reports.loan_due_report');
+			Route::match(['get', 'post'], 'reports/upcoming_emi_report', 'ReportController@upcoming_emi_report')->name('reports.upcoming_emi_report');
 			Route::match(['get', 'post'], 'reports/expense_report', 'ReportController@expense_report')->name('reports.expense_report');
 			Route::match(['get', 'post'], 'reports/revenue_report', 'ReportController@revenue_report')->name('reports.revenue_report');
 		});
@@ -264,21 +276,22 @@ Route::group(['middleware' => ['install']], function () {
 
 });
 
-Route::namespace ('Gateway')->prefix('callback')->name('callback.')->group(function () {
-	//Fiat Currency
-	Route::get('paypal', 'PayPal\ProcessController@callback')->name('PayPal')->middleware('auth');
-	Route::post('stripe', 'Stripe\ProcessController@callback')->name('Stripe')->middleware('auth');
-	Route::post('razorpay', 'Razorpay\ProcessController@callback')->name('Razorpay')->middleware('auth');
-	Route::get('paystack', 'Paystack\ProcessController@callback')->name('Paystack')->middleware('auth');
-	Route::get('flutterwave', 'Flutterwave\ProcessController@callback')->name('Flutterwave')->middleware('auth');
-	Route::match(['get', 'post'], 'voguepay', 'VoguePay\ProcessController@callback')->name('VoguePay');
-	Route::get('mollie', 'Mollie\ProcessController@callback')->name('Mollie')->middleware('auth');
-	Route::match(['get', 'post'], 'instamojo', 'Instamojo\ProcessController@callback')->name('Instamojo');
+Route::
+		namespace('Gateway')->prefix('callback')->name('callback.')->group(function () {
+			//Fiat Currency
+			Route::get('paypal', 'PayPal\ProcessController@callback')->name('PayPal')->middleware('auth');
+			Route::post('stripe', 'Stripe\ProcessController@callback')->name('Stripe')->middleware('auth');
+			Route::post('razorpay', 'Razorpay\ProcessController@callback')->name('Razorpay')->middleware('auth');
+			Route::get('paystack', 'Paystack\ProcessController@callback')->name('Paystack')->middleware('auth');
+			Route::get('flutterwave', 'Flutterwave\ProcessController@callback')->name('Flutterwave')->middleware('auth');
+			Route::match(['get', 'post'], 'voguepay', 'VoguePay\ProcessController@callback')->name('VoguePay');
+			Route::get('mollie', 'Mollie\ProcessController@callback')->name('Mollie')->middleware('auth');
+			Route::match(['get', 'post'], 'instamojo', 'Instamojo\ProcessController@callback')->name('Instamojo');
 
-	//Crypto Currency
-	Route::get('blockchain', 'BlockChain\ProcessController@callback')->name('BlockChain');
-	Route::post('coinpayments', 'CoinPayments\ProcessController@callback')->name('CoinPayments');
-});
+			//Crypto Currency
+			Route::get('blockchain', 'BlockChain\ProcessController@callback')->name('BlockChain');
+			Route::post('coinpayments', 'CoinPayments\ProcessController@callback')->name('CoinPayments');
+		});
 
 Route::get('dashboard/json_expense_by_category', 'DashboardController@json_expense_by_category')->middleware('auth');
 Route::get('dashboard/json_deposit_withdraw_analytics/{currency_id?}', 'DashboardController@json_deposit_withdraw_analytics')->middleware('auth');

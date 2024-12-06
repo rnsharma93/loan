@@ -12,15 +12,18 @@ use App\Models\LoanRepayment;
 use App\Models\SavingsAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
 
-class ReportController extends Controller {
+class ReportController extends Controller
+{
 
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         date_default_timezone_set(get_option('timezone', 'Asia/Kolkata'));
     }
 
@@ -29,16 +32,17 @@ class ReportController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function account_statement(Request $request) {
+    public function account_statement(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.account_statement');
         } else if ($request->isMethod('post')) {
             @ini_set('max_execution_time', 0);
             @set_time_limit(0);
 
-            $data           = array();
-            $date1          = $request->date1;
-            $date2          = $request->date2;
+            $data = array();
+            $date1 = $request->date1;
+            $date2 = $request->date2;
             $account_number = isset($request->account_number) ? $request->account_number : '';
 
             $account = SavingsAccount::where('account_number', $account_number)->with('savings_type.currency')->first();
@@ -54,26 +58,27 @@ class ReportController extends Controller {
             (SELECT date(transactions.trans_date) as trans_date, transactions.description, IF(transactions.dr_cr='dr',transactions.amount,0) as debit, IF(transactions.dr_cr='cr',transactions.amount,0) as credit FROM `transactions` JOIN savings_accounts ON savings_account_id=savings_accounts.id WHERE savings_accounts.id = $account->id AND transactions.member_id = $account->member_id AND transactions.status=2 AND date(transactions.trans_date) >= '$date1' AND date(transactions.trans_date) <= '$date2')
             as all_transaction");
 
-            $data['date1']          = $request->date1;
-            $data['date2']          = $request->date2;
+            $data['date1'] = $request->date1;
+            $data['date2'] = $request->date2;
             $data['account_number'] = $request->account_number;
-            $data['account']        = $account;
+            $data['account'] = $account;
             return view('backend.reports.account_statement', $data);
         }
     }
 
-    public function loan_report(Request $request) {
+    public function loan_report(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.loan_report');
         } else if ($request->isMethod('post')) {
             @ini_set('max_execution_time', 0);
             @set_time_limit(0);
 
-            $data      = array();
-            $date1     = $request->date1;
-            $date2     = $request->date2;
+            $data = array();
+            $date1 = $request->date1;
+            $date2 = $request->date2;
             $member_no = isset($request->member_no) ? $request->member_no : '';
-            $status    = isset($request->status) ? $request->status : '';
+            $status = isset($request->status) ? $request->status : '';
             $loan_type = isset($request->loan_type) ? $request->loan_type : '';
 
             $data['report_data'] = Loan::select('loans.*')
@@ -97,44 +102,126 @@ class ReportController extends Controller {
                 ->orderBy('id', 'desc')
                 ->get();
 
-            $data['date1']     = $request->date1;
-            $data['date2']     = $request->date2;
-            $data['status']    = $request->status;
+            $data['date1'] = $request->date1;
+            $data['date2'] = $request->date2;
+            $data['status'] = $request->status;
             $data['member_no'] = $request->member_no;
             $data['loan_type'] = $request->loan_type;
             return view('backend.reports.loan_report', $data);
         }
     }
 
-    public function loan_due_report(Request $request) {
-        @ini_set('max_execution_time', 0);
-        @set_time_limit(0);
+    public function loan_due_report(Request $request)
+    {
+        // Handle GET Request
+        if ($request->isMethod('get')) {
+            return view('backend.reports.loan_due_report');
+        }
 
-        $data = array();
-        $date = date('Y-m-d');
+        // Handle POST Request
+        else if ($request->isMethod('post')) {
+            @ini_set('max_execution_time', 0);
+            @set_time_limit(0);
 
-        $data['report_data'] = LoanRepayment::selectRaw('loan_repayments.*, SUM(amount_to_pay) as total_due')
-            ->with('loan')
-            ->whereRaw("repayment_date < '$date'")
-            ->where('status', 0)
-            ->groupBy('loan_id')
-            ->get();
+            $data = array();
 
-        return view('backend.reports.loan_due_report', $data);
+            // Fetch request parameters
+            $date1 = $request->date1;
+            $date2 = $request->date2;
+            $member_no = $request->member_no ?? '';
+            $status = $request->status ?? '';
+            $loan_type = $request->loan_type ?? '';
+
+            // Fetch loans and filter
+            $data['report_data'] = Loan::select('loans.*')
+                ->with([
+                    'borrower',
+                    'loan_product',
+                    'repayments' => function ($query) {
+                        $query->selectRaw('
+                        loan_id,
+                        CASE 
+                        WHEN status = 0 AND MONTH(repayment_date) > 0 THEN MONTH(repayment_date) 
+                        ELSE NULL 
+                        END as due_month,
+                        COUNT(id) as total_installments,
+                        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as deposited_installments,
+                        SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as due_installments,
+                        SUM(amount_to_pay) as total_due,
+                        SUM(CASE WHEN status = 1 THEN amount_to_pay ELSE 0 END) as deposited_amount,
+                        SUM(CASE WHEN status = 0 THEN amount_to_pay ELSE 0 END) as due_amount
+                    ')
+                            ->groupBy('loan_id', 'due_month');
+                    }
+                ])
+                ->whereHas('repayments', function ($query) {
+                    $query->havingRaw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) > 0'); // Filter only loans with due installments
+                })
+                ->whereBetween('loans.created_at', [$date1, $date2])
+                ->orderBy('id', 'desc')
+                ->get();
+
+            // Pass filters back to the view
+            $data['date1'] = $date1;
+            $data['date2'] = $date2;
+            $data['status'] = $status;
+            $data['member_no'] = $member_no;
+            $data['loan_type'] = $loan_type;
+
+            return view('backend.reports.loan_due_report', $data);
+        }
     }
 
-    public function transactions_report(Request $request) {
+    public function upcoming_emi_report(Request $request)
+    {
+        $data = [];
+
+        $startDate = $request->input('date1') ? Carbon::parse($request->input('date1'))->startOfDay() : now()->startOfDay();
+        $endDate = $request->input('date2') ? Carbon::parse($request->input('date2'))->endOfDay() : now()->addDays(10)->endOfDay();
+
+        $query = Loan::select('loans.*')
+            ->with([
+                'borrower',
+                'loan_product',
+                'repayments' => function ($query) use ($startDate, $endDate) {
+                    $query->select('loan_id', 'repayment_date', 'amount_to_pay')
+                        ->whereBetween('repayment_date', [$startDate, $endDate])
+                        ->where('status', 0);
+                }
+            ])
+            ->whereHas('repayments', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('repayment_date', [$startDate, $endDate])
+                    ->where('status', 0);
+            });
+
+        $data['report_data'] = $query->orderBy('id', 'desc')->get();
+
+        foreach ($data['report_data'] as $loan) {
+            foreach ($loan->repayments as $repayment) {
+                $repayment->repayment_date = Carbon::parse($repayment->repayment_date);
+            }
+        }
+
+        $data['date1'] = $startDate->format('Y-m-d');
+        $data['date2'] = $endDate->format('Y-m-d');
+
+        return view('backend.reports.upcoming_emi_report', $data);
+    }
+
+
+    public function transactions_report(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.transactions_report');
         } else if ($request->isMethod('post')) {
             @ini_set('max_execution_time', 0);
             @set_time_limit(0);
 
-            $data             = array();
-            $date1            = $request->date1;
-            $date2            = $request->date2;
-            $account_number   = isset($request->account_number) ? $request->account_number : '';
-            $status           = isset($request->status) ? $request->status : '';
+            $data = array();
+            $date1 = $request->date1;
+            $date2 = $request->date2;
+            $account_number = isset($request->account_number) ? $request->account_number : '';
+            $status = isset($request->status) ? $request->status : '';
             $transaction_type = isset($request->transaction_type) ? $request->transaction_type : '';
 
             $data['report_data'] = Transaction::select('transactions.*')
@@ -158,27 +245,28 @@ class ReportController extends Controller {
                 ->orderBy('transactions.trans_date', 'desc')
                 ->get();
 
-            $data['date1']            = $request->date1;
-            $data['date2']            = $request->date2;
-            $data['status']           = $request->status;
-            $data['account_number']   = $request->account_number;
+            $data['date1'] = $request->date1;
+            $data['date2'] = $request->date2;
+            $data['status'] = $request->status;
+            $data['account_number'] = $request->account_number;
             $data['transaction_type'] = $request->transaction_type;
             return view('backend.reports.transactions_report', $data);
         }
     }
 
-    public function expense_report(Request $request) {
+    public function expense_report(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.expense_report');
         } else if ($request->isMethod('post')) {
             @ini_set('max_execution_time', 0);
             @set_time_limit(0);
 
-            $data     = array();
-            $date1    = $request->date1;
-            $date2    = $request->date2;
+            $data = array();
+            $date1 = $request->date1;
+            $date2 = $request->date2;
             $category = isset($request->category) ? $request->category : '';
-            $branch   = isset($request->branch) ? $request->branch : '';
+            $branch = isset($request->branch) ? $request->branch : '';
 
             $data['report_data'] = Expense::select('expenses.*')
                 ->with(['expense_category'])
@@ -194,20 +282,21 @@ class ReportController extends Controller {
                 ->orderBy('expense_date', 'desc')
                 ->get();
 
-            $data['date1']    = $request->date1;
-            $data['date2']    = $request->date2;
+            $data['date1'] = $request->date1;
+            $data['date2'] = $request->date2;
             $data['category'] = $request->category;
-            $data['branch']   = $request->branch;
+            $data['branch'] = $request->branch;
             return view('backend.reports.expense_report', $data);
         }
     }
 
-    public function account_balances(Request $request) {
+    public function account_balances(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.account_balances');
         } else if ($request->isMethod('post')) {
             $member_no = $request->member_no;
-            $member    = Member::where('member_no', $member_no)->first();
+            $member = Member::where('member_no', $member_no)->first();
             if (!$member) {
                 return back()->with('error', _lang('Invalid Member No'));
             }
@@ -216,16 +305,17 @@ class ReportController extends Controller {
         }
     }
 
-    public function revenue_report(Request $request) {
+    public function revenue_report(Request $request)
+    {
         if ($request->isMethod('get')) {
             return view('backend.reports.revenue_report');
         } else if ($request->isMethod('post')) {
             @ini_set('max_execution_time', 0);
             @set_time_limit(0);
 
-            $data        = array();
-            $year        = $request->year;
-            $month       = $request->month;
+            $data = array();
+            $year = $request->year;
+            $month = $request->month;
             $currency_id = $request->currency_id;
 
             $transaction_revenue = Transaction::selectRaw("CONCAT('Revenue from ', type), sum(charge) as amount")
@@ -269,8 +359,8 @@ class ReportController extends Controller {
                 ->union($others_fee)
                 ->get();
 
-            $data['year']        = $request->year;
-            $data['month']       = $request->month;
+            $data['year'] = $request->year;
+            $data['month'] = $request->month;
             $data['currency_id'] = $request->currency_id;
             return view('backend.reports.revenue_report', $data);
         }
