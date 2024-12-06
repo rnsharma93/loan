@@ -50,7 +50,6 @@
                         <th>{{ _lang('Borrower') }}</th>
                         <th>{{ _lang('Mobile No.') }}</th>
 						<th>{{ _lang('Address') }}</th>
-                        <th>{{ _lang('Product Name') }}</th>
                         <th>{{ _lang('EMI Date') }}</th>
                         <th>{{ _lang('EMI Amount') }}</th>
                         <th class="text-center">{{ _lang('Details') }}</th>
@@ -64,7 +63,6 @@
                                         <td>{{ strtoupper($loan->borrower->name) }} <br> S/O {{ strtoupper($loan->borrower->father_name) }}</td>
                                         <td>{{ $loan->borrower->mobile }}</td>
 										<td>{{ $loan->borrower->address }}</td>
-                                        <td>{{ $loan->loan_product->name ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($repayment->repayment_date)->format('d-m-Y') ?? 'Invalid date' }}</td>
                                         <td>{{ number_format($repayment->amount_to_pay, 2) }}</td>
                                         <td class="text-center">
