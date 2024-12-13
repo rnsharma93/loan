@@ -175,38 +175,24 @@ class ReportController extends Controller
     public function upcoming_emi_report(Request $request)
     {
         $data = [];
-
+        
         $startDate = $request->input('date1') ? Carbon::parse($request->input('date1'))->startOfDay() : now()->startOfDay();
+        
         $endDate = $request->input('date2') ? Carbon::parse($request->input('date2'))->endOfDay() : now()->addDays(10)->endOfDay();
-
-        $query = Loan::select('loans.*')
-            ->with([
-                'borrower',
-                'loan_product',
-                'repayments' => function ($query) use ($startDate, $endDate) {
-                    $query->select('loan_id', 'repayment_date', 'amount_to_pay')
-                        ->whereBetween('repayment_date', [$startDate, $endDate])
-                        ->where('status', 0);
-                }
-            ])
-            ->whereHas('repayments', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('repayment_date', [$startDate, $endDate])
-                    ->where('status', 0);
-            });
-
-        $data['report_data'] = $query->orderBy('id', 'desc')->get();
-
-        foreach ($data['report_data'] as $loan) {
-            foreach ($loan->repayments as $repayment) {
-                $repayment->repayment_date = Carbon::parse($repayment->repayment_date);
-            }
-        }
-
+    
+        $data['report_data'] = LoanRepayment::select('loan_id', 'repayment_date', 'amount_to_pay', 'penalty', 'principal_amount', 'interest', 'balance', 'status')
+            ->with(['loan'])
+            ->whereBetween('repayment_date', [$startDate, $endDate])
+            ->where('status', 0)
+            ->orderBy('repayment_date', 'asc')
+            ->get();
+    
         $data['date1'] = $startDate->format('Y-m-d');
         $data['date2'] = $endDate->format('Y-m-d');
-
+    
         return view('backend.reports.upcoming_emi_report', $data);
     }
+
 
 
     public function transactions_report(Request $request)
