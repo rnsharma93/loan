@@ -180,7 +180,7 @@ class ReportController extends Controller
         
         $endDate = $request->input('date2') ? Carbon::parse($request->input('date2'))->endOfDay() : now()->addDays(10)->endOfDay();
     
-        $data['report_data'] = LoanRepayment::select('loan_id', 'repayment_date', 'amount_to_pay', 'penalty', 'principal_amount', 'interest', 'balance', 'status')
+        $data['report_data'] = LoanRepayment::query()
             ->with(['loan'])
             ->whereBetween('repayment_date', [$startDate, $endDate])
             ->where('status', 0)
@@ -192,7 +192,6 @@ class ReportController extends Controller
     
         return view('backend.reports.upcoming_emi_report', $data);
     }
-
 
 
     public function transactions_report(Request $request)
