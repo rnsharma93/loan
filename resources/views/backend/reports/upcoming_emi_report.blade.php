@@ -29,8 +29,6 @@
                                     </div>
                                 </div>
 
-
-
                                 <div class="col-xl-2 col-lg-4">
                                     <button type="submit" class="btn btn-light btn-xs btn-block mt-26">
                                         <i class="ti-filter"></i>&nbsp;{{ _lang('Filter') }}
@@ -52,7 +50,6 @@
                                     <th class="text-center">{{ _lang('Loan ID') }}</th>
                                     <th class="text-center">{{ _lang('Borrower') }}</th>
                                     <th class="text-center">{{ _lang('Mobile No.') }}</th>
-                                    <th class="text-center">{{ _lang('Address') }}</th>
                                     <th class="text-center">{{ _lang('EMI Date') }}</th>
                                     <th class="text-center">{{ _lang('EMI Amount') }}</th>
                                     <th class="text-center">{{ _lang('Details') }}</th>
@@ -62,9 +59,8 @@
                                 @if ($report_data->isNotEmpty())
                                     @foreach ($report_data as $index => $repayment)
                                         <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td> <!-- SR No. using counter -->
+                                            <td class="text-center">{{ $index + 1 }}</td>
                                             <td class="text-center">{{ $repayment->loan->loan_id ?? 'N/A' }}</td>
-                                            <!-- Fetch loan_id from loan -->
                                             <td class="text-center">
                                                 {{ strtoupper($repayment->loan->borrower->name ?? 'N/A') }} <br>
                                                 S/O {{ strtoupper($repayment->loan->borrower->father_name ?? 'N/A') }}
@@ -72,7 +68,6 @@
                                             <td class="text-center">
                                                 +91 {{ $repayment->loan->borrower->mobile ?? 'N/A' }}
                                             </td>
-                                            <td class="text-center">{{ $repayment->loan->borrower->address ?? 'N/A' }}</td>
                                             <td class="text-center">
                                                 {{ \Carbon\Carbon::parse($repayment->repayment_date)->format('d-m-Y') ?? 'Invalid date' }}
                                             </td>
@@ -92,9 +87,6 @@
                                 @endif
                             </tbody>
                         </table>
-
-
-
                     </div>
                 </div>
             </div>
