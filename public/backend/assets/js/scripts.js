@@ -1247,81 +1247,41 @@
 
   if ($(".report-table").length) {
     $(".report-table").each(function (i, obj) {
-	  var headerText = $(this).prev(".report-header").html();
-      var report_table = $(obj).DataTable({
-        responsive: true,
-        bAutoWidth: false,
-        ordering: false,
-        lengthChange: false,
-        dom:
-          "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        language: {
-          decimal: "",
-          emptyTable: $lang_no_data_found,
-          info:
-            $lang_showing +
-            " _START_ " +
-            $lang_to +
-            " _END_ " +
-            $lang_of +
-            " _TOTAL_ " +
-            $lang_entries,
-          infoEmpty: $lang_showing_0_to_0_of_0_entries,
-          infoFiltered: "(filtered from _MAX_ total entries)",
-          infoPostFix: "",
-          thousands: ",",
-          lengthMenu: $lang_show + " _MENU_ " + $lang_entries,
-          loadingRecords: $lang_loading,
-          processing: $lang_processing,
-          search: $lang_search,
-          zeroRecords: $lang_no_matching_records_found,
-          paginate: {
-            first: $lang_first,
-            last: $lang_last,
-            previous: "<i class='ti-angle-left'></i>",
-            next: "<i class='ti-angle-right'></i>",
-          },
-          aria: {
-            sortAscending: ": activate to sort column ascending",
-            sortDescending: ": activate to sort column descending",
-          },
-          buttons: {
-            copy: $lang_copy,
-            excel: $lang_excel,
-            pdf: $lang_pdf,
-            print: $lang_print,
-          },
-        },
-        drawCallback: function () {
-          $(".dataTables_paginate > .pagination").addClass(
-            "pagination-bordered"
-          );
-        },
-        buttons: [
-          "copy",
-          "excel",
-          "pdf",
-          {
-            extend: "print",
-            title: "",
-            customize: function (win) {
-              $(win.document.body)
-                .css("font-size", "10pt")
-                .prepend(
-                  '<div class="text-center">' + headerText + '</div>'
-                );
+        var headerText = $(this).prev(".report-header").html();
 
-              $(win.document.body)
-                .find("table")
-                .addClass("compact")
-                .css("font-size", "inherit");
+        var report_table = $(obj).DataTable({
+            responsive: true,
+            lengthChange: true,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            buttons: [
+                "excel", // Export to Excel
+                "pdf", // Export to PDF
+                {
+                    extend: "print",
+                    title: "",
+                    customize: function (win) {
+                        $(win.document.body)
+                            .css("font-size", "10pt")
+                            .prepend('<div class="text-center">' + headerText + '</div>');
+
+                        $(win.document.body)
+                            .find("table")
+                            .addClass("compact")
+                            .css("font-size", "inherit");
+                    },
+                },
+            ],
+            dom:
+                "<'row'<'col-sm-4'l><'col-sm-4'B><'col-sm-4'f>>" + // Page length menu on the left, buttons in the center, search on the right
+                "<'row'<'col-sm-12'tr>>" + // Table rows
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>", // Info and pagination in one row
+            drawCallback: function () {
+                // Add a custom class to pagination for styling
+                $(".dataTables_paginate > .pagination").addClass("pagination-bordered");
             },
-          }],
-      });
+        });
     });
-  }
+}
 
   $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
     $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
